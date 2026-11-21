@@ -1,0 +1,16 @@
+# Flight data stays out of the repository.  Logs and exports say where and when you fly,
+# and a keychain unlocks its log for anyone.  The folders are kept, their contents are not.
+/logs/*
+/keychains/*
+/exports/*
+!.gitkeep
+
+# The same files wherever else they turn up.
+FlightRecord_*
+DJIFlightRecord_*
+*.keychains.json
+
+# Made by Python, uv and builds.
+__pycache__/
+.venv/
+dist/

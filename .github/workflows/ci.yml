@@ -1,0 +1,68 @@
+# Checks that need no flight record.  There is no test suite yet, so nothing is converted here.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash  # named, so that it runs with -e and -o pipefail
+
+jobs:
+  start:
+    name: Starts on Python ${{ matrix.python }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The oldest supported Python and a current one: uv.lock holds other versions below 3.11.
+        python: ["3.10", "3.14"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d  # v10.4.0
+        with:
+          python-version: ${{ matrix.python }}
+          enable-cache: false
+      # --locked fails when uv.lock no longer matches pyproject.toml.
+      - run: uv run --locked flyscribe --help
+
+  archives:
+    name: Release archives
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d  # v10.4.0
+        with:
+          enable-cache: false
+      - run: uv build
+      # A working copy also holds flight records, keys and exports, and pyproject.toml is what keeps
+      # them out of a release.  A line marked < is in the archive and not on the list.
+      - name: The archives hold the release files and nothing else
+        run: |
+          diff <(tar -tzf dist/flyscribe-*.tar.gz | cut -d/ -f2- | LC_ALL=C sort) - <<'EOF'
+          .gitignore
+          LICENSE
+          PKG-INFO
+          README.md
+          THIRD_PARTY_NOTICES.md
+          flyscribe.py
+          pyproject.toml
+          EOF
+          diff <(unzip -Z1 dist/flyscribe-*.whl | sed 's|^[^/]*\.dist-info/|dist-info/|' | LC_ALL=C sort) - <<'EOF'
+          dist-info/METADATA
+          dist-info/RECORD
+          dist-info/WHEEL
+          dist-info/entry_points.txt
+          dist-info/licenses/LICENSE
+          dist-info/licenses/THIRD_PARTY_NOTICES.md
+          flyscribe.py
+          EOF

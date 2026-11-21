@@ -1,0 +1,35 @@
+[project]
+name = "flyscribe"
+version = "0.1.0"
+description = "Convert DJI flight records (the FlightRecord_*.txt logs written by DJI Fly) to CSV, JSON, KML, GPX or GeoJSON"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md"]
+authors = [{ name = "Nigel Gibbs" }]
+keywords = ["dji", "drone", "flight record", "flight log", "telemetry", "csv", "gpx", "kml", "geojson"]
+classifiers = [
+    "Environment :: Console",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: GIS",
+]
+dependencies = [
+    "cryptography>=3.1",  # the first release whose Cipher() takes no backend argument
+]
+
+[project.scripts]
+flyscribe = "flyscribe:main"
+
+[project.urls]
+Repository = "https://github.com/gibbsoft/flyscribe"
+Issues = "https://github.com/gibbsoft/flyscribe/issues"
+
+[build-system]
+requires = ["hatchling>=1.27"]  # the first release that writes the licence fields into the metadata
+build-backend = "hatchling.build"
+
+# A working copy also holds flight records, keys and exports.  None of them may end up in a release,
+# so the archives take flyscribe.py and nothing else from the folder; hatchling adds this file, the
+# README and the licence files itself.
+[tool.hatch.build]
+only-include = ["flyscribe.py"]

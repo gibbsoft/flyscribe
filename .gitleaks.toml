@@ -1,0 +1,21 @@
+# What gitleaks (https://github.com/gitleaks/gitleaks) looks for in this repository: its own rules for
+# the keys and tokens of many services, and two for what flyscribe handles.
+# .github/workflows/secrets.yml runs it on every push; `gitleaks git` does the same in a working copy.
+
+[extend]
+useDefault = true
+
+# A file from keychains/ under any name.  With its flight record, it is all that reading the record takes.
+[[rules]]
+id = "flyscribe-keychain"
+description = "Unlocked key of a flight record"
+regex = '''"aesKey"\s*:\s*"[A-Za-z0-9+/]{43}="'''
+keywords = ["aeskey"]
+
+# A key that follows its usual name: DJI_API_KEY=..., --api-key ..., Api-Key: ...
+# The value has to be 16 letters and digits or more, so a placeholder such as your-app-key does not match.
+[[rules]]
+id = "dji-api-key"
+description = "DJI API key"
+regex = '''(?i)(?:DJI_API_KEY|api[-_]key)["'\s:=]{1,4}([a-z0-9]{16,})\b'''
+keywords = ["dji_api_key", "api-key", "api_key"]
